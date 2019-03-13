@@ -64,6 +64,7 @@
 
 typedef void* void_ptr;
 typedef const void* const_void_ptr;
+typedef void* (*shellcode_t)();
 
 #ifndef WIN32
 // Windows compatable types
@@ -327,8 +328,7 @@ int main()
 	void* data = memmap(NULL, 0x1000, O_MEM_RWE);
 	memcpy(data, "\x33\xc0\xc3", 3); // zero out eax and return for x86 / amd64
 	assert(data != NULL);
-	int (*f)() = data;
-	assert(f() == 0);
+	assert(((shellcode_t)data)() == 0);
 
 	char buff[1024];
 	zf(buff); // zero fill buffer
