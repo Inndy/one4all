@@ -169,7 +169,7 @@ void* memmap(void *addr, size_t size, uint32_t prot)
 int memunmap(void *addr, size_t size)
 {
 #ifdef WIN32
-	return O_STATUS(VirtualFree(addr, size, MEM_RELEASE) != 0);
+	return O_STATUS(VirtualFree(addr, 0 /* must be 0 if MEM_RELEASE */, MEM_RELEASE) != 0);
 #endif
 #ifdef LINUX
 	return O_STATUS(munmap(addr, size) == 0);
