@@ -187,7 +187,7 @@ void hexdump_file(const void *data, size_t size, FILE *target) {
 	ascii[16] = '\0';
 	for (i = 0; i < size; ++i) {
 		if(i % 16 == 0) {
-			fprintf(target, "%.8x: ", i);
+			fprintf(target, "%.8llx: ", (unsigned long long)i);
 		}
 		fprintf(target, "%02X ", ((unsigned char*)data)[i]);
 		if (((unsigned char*)data)[i] >= ' ' && ((unsigned char*)data)[i] <= '~') {
@@ -226,7 +226,7 @@ char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size
 	ascii[16] = '\0';
 	for (i = 0; i < size && written < buff_size; ++i) {
 		if(i % 16 == 0) {
-			written += snprintf(buff + written, buff_size - written, "%.8x: ", i);
+			written += snprintf(buff + written, buff_size - written, "%.8llx: ", (unsigned long long)i);
 		}
 		written += snprintf(buff + written, buff_size - written, "%02X ", ((unsigned char*)data)[i]);
 		if (((unsigned char*)data)[i] >= ' ' && ((unsigned char*)data)[i] <= '~') {
