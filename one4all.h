@@ -106,10 +106,13 @@ typedef void* (*shellcode_t)();
 #define O_MEM_R   1
 #define O_MEM_W   2
 #define O_MEM_E   4
+#define O_MEM_X   O_MEM_E
 #define O_MEM_RO  O_MEM_R
 #define O_MEM_RE  (O_MEM_R | O_MEM_E)
+#define O_MEM_RX  O_MEM_RE
 #define O_MEM_RW  (O_MEM_R | O_MEM_W)
 #define O_MEM_RWE (O_MEM_R | O_MEM_W | O_MEM_E)
+#define O_MEM_RWX O_MEM_RWE
 #endif
 
 ///////////////////////////
