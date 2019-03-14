@@ -115,6 +115,14 @@ typedef void* (*shellcode_t)();
 #define O_MEM_RWX O_MEM_RWE
 #endif
 
+///////////////////
+//               //
+// Useful macros //
+//               //
+///////////////////
+
+#define ALIGN_TO(V, A) (((V) / (A) + 1) * (A))
+
 ///////////////////////////
 //                       //
 // OS specific functions //
