@@ -95,12 +95,12 @@ typedef void* (*shellcode_t)();
 //                       //
 ///////////////////////////
 
-#ifdef O_OS_EXT
 #define O_INVALID (intptr_t)-1
 #define O_SUCCESS 1
 #define O_FAILED  0
 #define O_STATUS(X) (X) ? O_SUCCESS : O_FAILED
 
+#ifdef O_OS_EXT
 #define O_MEM_N   0
 #define O_MEM_R   1
 #define O_MEM_W   2
