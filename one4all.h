@@ -99,6 +99,7 @@ typedef void* (*shellcode_t)();
 #define O_SUCCESS 1
 #define O_FAILED  0
 #define O_STATUS(X) (X) ? O_SUCCESS : O_FAILED
+#define MUST(X) assert((X) == O_SUCCESS)
 
 #ifdef O_OS_EXT
 #define O_MEM_N   0
