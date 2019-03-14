@@ -197,7 +197,6 @@ void hexdump_file(const void *data, size_t size, FILE *target) {
 			ascii[i % 16] = '.';
 		}
 		if ((i+1) % 8 == 0 || i+1 == size) {
-			fprintf(target, " ");
 			if ((i+1) % 16 == 0) {
 				fprintf(target, " %s \n", ascii);
 			} else if (i+1 == size) {
@@ -236,7 +235,6 @@ char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size
 			ascii[i % 16] = '.';
 		}
 		if ((i+1) % 8 == 0 || i+1 == size) {
-			written += snprintf(buff + written, buff_size - written, " ");
 			if ((i+1) % 16 == 0) {
 				written += snprintf(buff + written, buff_size - written, " %s \n", ascii);
 			} else if (i+1 == size) {
