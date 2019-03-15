@@ -294,7 +294,7 @@ int readfile(char *filename, uint8_t **out_buffer, size_t *out_size)
 	}
 
 	*out_size = fsize(fp);
-	*out_buffer = malloc(*out_size);
+	*out_buffer = (uint8_t*)malloc(*out_size);
 	if(*out_buffer == NULL) {
 		goto failed;
 	}
