@@ -286,7 +286,7 @@ size_t fsize(FILE *fp)
 	return size;
 }
 
-int readfile(char *filename, uint8_t **out_buffer, size_t *out_size)
+int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size)
 {
 	FILE *fp = fopen(filename, "rb");
 	if(fp == NULL) {
@@ -314,7 +314,7 @@ failed:
 	return O_FAILED;
 }
 
-int writefile(char *filename, void *buffer, size_t size)
+int writefile(const char *filename, void *buffer, size_t size)
 {
 	FILE *fp = fopen(filename, "wb");
 	if(fp == NULL) {
