@@ -277,13 +277,14 @@ size_t hexdecode(const char *encoded, uint8_t *buffer)
 }
 
 // TODO: handle file size larger than uint32_t under 32bit process
-size_t fsize(FILE *fp)
+int fsize(FILE *fp, size_t *out)
 {
-	size_t curr = ftell(fp);
-	fseek(fp, 0, SEEK_END);
-	size_t size = ftell(fp);
-	fseek(fp, curr, SEEK_SET);
-	return size;
+	off_t curr = ftello(fp);
+	if(fseeko(fp, 0, SEEK_END) != 0) return O_FAILED;
+	*out = ftello(fp);
+	// it will be a fatal error if we can't restore file pointer
+	assert(fseeko(fp, curr, SEEK_SET) == 0);
+	return O_SUCCESS;
 }
 
 int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size)
@@ -293,7 +294,10 @@ int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size)
 		return O_FAILED;
 	}
 
-	*out_size = fsize(fp);
+	if(fsize(fp, out_size) != O_SUCCESS) {
+		goto failed;
+	}
+
 	*out_buffer = (uint8_t*)malloc(*out_size);
 	if(*out_buffer == NULL) {
 		goto failed;
