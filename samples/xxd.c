@@ -12,5 +12,12 @@ int main(int argc, char *argv[])
 
 	MUST(readfile(argv[1], &buff, &buff_size));
 
-	hexdump(buff, buff_size);
+	if(argv[2]) {
+		FILE *fout = fopen(argv[2], "w");
+		assert(fout != NULL);
+		hexdump_file(buff, buff_size, fout);
+		fclose(fout);
+	} else {
+		hexdump(buff, buff_size);
+	}
 }
