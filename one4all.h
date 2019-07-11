@@ -201,7 +201,7 @@ int memunmap(void *addr, size_t size)
 }
 
 #define xxd(X) puts(#X); hexdump(X, sizeof(X));
-#define zf(X) memset(X, 0, sizeof(X));
+#define zfill(X) memset(X, 0, sizeof(X));
 
 void hexdump_file(const void *data, size_t size, FILE *target) {
 	char ascii[17];
@@ -354,7 +354,7 @@ int main()
 	assert(((shellcode_t)data)() == 0);
 
 	char buff[1024];
-	zf(buff); // zero fill buffer
+	zfill(buff); // zero fill buffer
 
 	char *p = hexdump_string(data, 16, buff, sizeof buff);
 	strcat(p, "NotBad\n");
