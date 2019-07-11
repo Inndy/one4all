@@ -8,7 +8,7 @@
 
 ## Docs
 
-Sorry for no document. Read the [code](one4all.h) instead.
+No docs available right now. Read the [code](one4all.h) and [examples](samples) instead.
 
 ## License
 
