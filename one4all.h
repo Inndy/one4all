@@ -219,7 +219,7 @@ void hexdump_file(const void *data, size_t size, FILE *target) {
 		}
 		if ((i+1) % 8 == 0 || i+1 == size) {
 			if ((i+1) % 16 == 0) {
-				fprintf(target, " %s \n", ascii);
+				fprintf(target, " %s\n", ascii);
 			} else if (i+1 == size) {
 				ascii[(i+1) % 16] = '\0';
 				if ((i+1) % 16 <= 8) {
@@ -228,7 +228,7 @@ void hexdump_file(const void *data, size_t size, FILE *target) {
 				for (j = (i+1) % 16; j < 16; ++j) {
 					fprintf(target, "   ");
 				}
-				fprintf(target, " %s \n", ascii);
+				fprintf(target, " %s\n", ascii);
 			}
 		}
 	}
@@ -257,7 +257,7 @@ char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size
 		}
 		if ((i+1) % 8 == 0 || i+1 == size) {
 			if ((i+1) % 16 == 0) {
-				written += snprintf(buff + written, buff_size - written, " %s \n", ascii);
+				written += snprintf(buff + written, buff_size - written, " %s\n", ascii);
 			} else if (i+1 == size) {
 				ascii[(i+1) % 16] = '\0';
 				if ((i+1) % 16 <= 8) {
@@ -266,7 +266,7 @@ char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size
 				for (j = (i+1) % 16; j < 16; ++j) {
 					written += snprintf(buff + written, buff_size - written, "   ");
 				}
-				written += snprintf(buff + written, buff_size - written, " %s \n", ascii);
+				written += snprintf(buff + written, buff_size - written, " %s\n", ascii);
 			}
 		}
 	}
