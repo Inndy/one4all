@@ -85,8 +85,17 @@ typedef void* (*shellcode_t)();
 
 // IDA types
 #ifndef __int8
-#define __int8 uint8_t
+#define __int8 char
 #endif
+
+#ifndef __int64
+#define __int64 int64_t
+#endif
+
+#ifndef _DWORD
+#define _DWORD  uint32_t
+#endif
+
 #define _BYTE  uint8_t
 
 ///////////////////////////
