@@ -1,6 +1,12 @@
-#ifndef ONE4ALL
+// one4all.h by Inndy Lin <inndy.tw@gmail.com>
+// compiled at 2020-02-21 16:39:30 +0800
+#ifndef _ONE4ALL_H_
+#define _ONE4ALL_H_
+
+/* filename: src/one4all.h */
+
 // version
-#define ONE4ALL 1
+#define ONE4ALL 2
 
 #include <assert.h>
 #include <ctype.h>
@@ -58,31 +64,39 @@
 #include <unistd.h>
 #endif
 
-////////////////
-//            //
-// Data types //
-//            //
-////////////////
+///////////////////////////
+//                       //
+// One4All shared consts //
+//                       //
+///////////////////////////
+
+#define O_INVALID (intptr_t)-1
+#define O_SUCCESS 1
+#define O_FAILED  0
+#define O_STATUS(X) (X) ? O_SUCCESS : O_FAILED
+#define MUST(X) assert((X) == O_SUCCESS)
+/* filename: src/dtypes.h */
 
 typedef void* void_ptr;
 typedef const void* const_void_ptr;
 typedef void* (*shellcode_t)();
 
 #ifndef WIN32
-// Windows compatable types
-#define CHAR    int8_t
-#define BYTE    uint8_t
-#define UCHAR   uint8_t
-#define SHORT   int16_t
-#define USHORT  uint16_t
-#define DWORD   uint32_t
-#define LONG    int32_t
-#define ULONG   uint32_t
-#define QWORD   uint64_t
-#define SIZE    size_t
-#define PVOID   void_ptr
-#define LPVOID  void_ptr
-#define LPCVOID const_void_ptr
+// Windows data types for non-windows platform
+#define CHAR      int8_t
+#define BYTE      uint8_t
+#define UCHAR     uint8_t
+#define SHORT     int16_t
+#define USHORT    uint16_t
+#define DWORD     uint32_t
+#define LONG      int32_t
+#define ULONG     uint32_t
+#define QWORD     uint64_t
+#define SIZE_T    size_t
+#define PVOID     void_ptr
+#define LPVOID    void_ptr
+#define LPCVOID   const_void_ptr
+#define DWORD_PTR uintptr_t
 #endif
 
 // IDA types
@@ -95,73 +109,18 @@ typedef void* (*shellcode_t)();
 #endif
 
 #ifndef _DWORD
-#define _DWORD  uint32_t
+#define _DWORD uint32_t
 #endif
 
-#define _BYTE  uint8_t
-
-///////////////////////////
-//                       //
-// One4All shared consts //
-//                       //
-///////////////////////////
-
-#define O_INVALID (intptr_t)-1
-#define O_SUCCESS 1
-#define O_FAILED  0
-#define O_STATUS(X) (X) ? O_SUCCESS : O_FAILED
-#define MUST(X) assert((X) == O_SUCCESS)
-
-#ifdef O_OS_EXT
-#define O_MEM_N   0
-#define O_MEM_R   1
-#define O_MEM_W   2
-#define O_MEM_E   4
-#define O_MEM_X   O_MEM_E
-#define O_MEM_RO  O_MEM_R
-#define O_MEM_RE  (O_MEM_R | O_MEM_E)
-#define O_MEM_RX  O_MEM_RE
-#define O_MEM_RW  (O_MEM_R | O_MEM_W)
-#define O_MEM_RWE (O_MEM_R | O_MEM_W | O_MEM_E)
-#define O_MEM_RWX O_MEM_RWE
+#ifndef _BYTE
+#define _BYTE uint8_t
 #endif
+/* filename: src/file.h */
 
-///////////////////
-//               //
-// Useful macros //
-//               //
-///////////////////
-
-#define ALIGN_TO(V, A) (((V) / (A) + 1) * (A))
-
-///////////////////////////
-//                       //
-// Function Definiations //
-//                       //
-///////////////////////////
-
-int memprotect(void *mem, size_t size, uint32_t prot);
-void* memmap(void *addr, size_t size, uint32_t prot);
-int memunmap(void *addr, size_t size);
-
-#define xxd(X) puts(#X); hexdump(X, sizeof(X))
-#define zfill(X) memset(X, 0, sizeof(X))
-
-void hexdump_ex(const void *ptr, size_t size, intptr_t addr, void (*cb)(void *, const char *), void *ctx);
-void hexdump_file(const void *data, size_t size, FILE *target);
-void hexdump(const void *data, size_t size);
-char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size);
-size_t hexdecode(const char *encoded, void *buffer);
 int fsize(FILE *fp, size_t *out);
 int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size);
 int writefile(const char *filename, void *buffer, size_t size);
-
-
-///////////////////////
-//                   //
-// Hash Table Header //
-//                   //
-///////////////////////
+/* filename: src/hashtable.h */
 
 typedef struct _HTBL_ENTRY {
     struct _HTBL_ENTRY *next;
@@ -180,14 +139,101 @@ void htbl_insert(PHTBL t, void *key, void *data);
 void* htbl_search(PHTBL t, void *key);
 int htbl_remove(PHTBL t, void *key);
 void htbl_destroy(PHTBL t);
+/* filename: src/hex.h */
 
-/*** SPLITTER FOR DEFINIATION AND IMPLEMENTATION ****/
+void hexdump_ex(const void *ptr, size_t size, intptr_t addr, void (*cb)(void *, const char *), void *ctx);
+void hexdump_file(const void *data, size_t size, FILE *target);
+void hexdump(const void *data, size_t size);
+char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size);
+size_t hexdecode(const char *encoded, void *buffer);
 
-/////////////////////
-//                 //
-// Hash Table Body //
-//                 //
-/////////////////////
+#define xxd(X) puts(#X); hexdump(X, sizeof(X))
+#define zfill(X) memset(X, 0, sizeof(X))
+
+#define HEX_DIGIT_DECODE(H) (('0' <= (H) && (H) <= '9') ? (H) - '0' : (((H) | ' ') - 'a' + 0xa))
+/* filename: src/mem.h */
+
+#define ALIGN_TO(V, A) (((V) / (A) + 1) * (A))
+
+#ifdef O_OS_EXT
+#define O_MEM_N   0
+#define O_MEM_R   1
+#define O_MEM_W   2
+#define O_MEM_E   4
+#define O_MEM_X   O_MEM_E
+#define O_MEM_RO  O_MEM_R
+#define O_MEM_RE  (O_MEM_R | O_MEM_E)
+#define O_MEM_RX  O_MEM_RE
+#define O_MEM_RW  (O_MEM_R | O_MEM_W)
+#define O_MEM_RWE (O_MEM_R | O_MEM_W | O_MEM_E)
+#define O_MEM_RWX O_MEM_RWE
+
+int memprotect(void *mem, size_t size, uint32_t prot);
+void* memmap(void *addr, size_t size, uint32_t prot);
+int memunmap(void *addr, size_t size);
+#endif
+/* filename: src/file.c */
+
+// TODO: handle file size larger than uint32_t under 32bit process
+int fsize(FILE *fp, size_t *out)
+{
+	off_t curr = ftello(fp);
+	if(fseeko(fp, 0, SEEK_END) != 0) return O_FAILED;
+	*out = ftello(fp);
+	// it will be a fatal error if we can't restore file pointer
+	assert(fseeko(fp, curr, SEEK_SET) == 0);
+	return O_SUCCESS;
+}
+
+int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size)
+{
+	FILE *fp = fopen(filename, "rb");
+	if(fp == NULL) {
+		return O_FAILED;
+	}
+
+	if(fsize(fp, out_size) != O_SUCCESS) {
+		goto failed;
+	}
+
+	*out_buffer = (uint8_t*)malloc(*out_size);
+	if(*out_buffer == NULL) {
+		goto failed;
+	}
+
+	if(fread(*out_buffer, *out_size, 1, fp) != 1) {
+		goto failed;
+	}
+
+	fclose(fp);
+	return O_SUCCESS;
+
+failed:
+	free(*out_buffer);
+	*out_size = 0;
+	*out_buffer = NULL;
+	fclose(fp);
+	return O_FAILED;
+}
+
+int writefile(const char *filename, void *buffer, size_t size)
+{
+	FILE *fp = fopen(filename, "wb");
+	if(fp == NULL) {
+		return O_FAILED;
+	}
+
+	if(fwrite(buffer, size, 1, fp) != 1) {
+		goto failed;
+	}
+
+	fclose(fp);
+	return O_SUCCESS;
+failed:
+	fclose(fp);
+	return O_FAILED;
+}
+/* filename: src/hashtable.c */
 
 uintptr_t htbl_hash_data(uintptr_t seed, void* data, size_t len)
 {
@@ -276,74 +322,7 @@ void htbl_destroy(PHTBL t)
     }
     free(t);
 }
-
-///////////////////////////
-//                       //
-// OS specific functions //
-//                       //
-///////////////////////////
-
-uint32_t _native_mem_prot_conv(uint32_t prot)
-{
-#ifdef WIN32
-	switch(prot) {
-		case O_MEM_N: return PAGE_NOACCESS;
-		case O_MEM_RO: return PAGE_READONLY;
-		case O_MEM_RE: return PAGE_EXECUTE_READ;
-		case O_MEM_RW: return PAGE_READWRITE;
-		case O_MEM_RWE: return PAGE_EXECUTE_READWRITE;
-		default: return O_INVALID;
-	}
-#endif
-#ifdef LINUX
-	switch(prot) {
-		case O_MEM_N: return PROT_NONE;
-		case O_MEM_RO: return PROT_READ;
-		case O_MEM_RE: return PROT_READ | PROT_EXEC;
-		case O_MEM_RW: return PROT_READ | PROT_WRITE;
-		case O_MEM_RWE: return PROT_READ | PROT_WRITE | PROT_EXEC;
-		default: return O_INVALID;
-	}
-#endif
-	return O_INVALID;
-}
-
-int memprotect(void *mem, size_t size, uint32_t prot)
-{
-#ifdef WIN32
-	DWORD old_prot;
-	return O_STATUS(VirtualProtect(mem, size, _native_mem_prot_conv(prot), &old_prot) != 0);
-#endif
-#ifdef LINUX
-	return O_STATUS(mprotect(mem, size, _native_mem_prot_conv(prot)) == 0);
-#endif
-
-	return O_FAILED;
-}
-
-void* memmap(void *addr, size_t size, uint32_t prot)
-{
-#ifdef WIN32
-	return VirtualAlloc(addr, size, MEM_RESERVE | MEM_COMMIT, _native_mem_prot_conv(prot));
-#endif
-#ifdef LINUX
-	return mmap(addr, size, _native_mem_prot_conv(prot), /*flags*/ MAP_PRIVATE | MAP_ANONYMOUS, /*fd*/ 0, /*offset*/ 0);
-#endif
-
-	return NULL;
-}
-
-int memunmap(void *addr, size_t size)
-{
-#ifdef WIN32
-	return O_STATUS(VirtualFree(addr, 0 /* must be 0 if MEM_RELEASE */, MEM_RELEASE) != 0);
-#endif
-#ifdef LINUX
-	return O_STATUS(munmap(addr, size) == 0);
-#endif
-
-	return O_FAILED;
-}
+/* filename: src/hex.c */
 
 void hexdump_ex(const void *ptr, size_t size, intptr_t addr, void (*cb)(void *, const char *), void *ctx)
 {
@@ -406,7 +385,6 @@ char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size
 	return buff;
 }
 
-#define HEX_DIGIT_DECODE(H) (('0' <= (H) && (H) <= '9') ? (H) - '0' : (((H) | ' ') - 'a' + 0xa))
 
 size_t hexdecode(const char *encoded, void *buffer)
 {
@@ -423,68 +401,75 @@ skip_space:
 
 	return i;
 }
+/* filename: src/mem.c */
 
-// TODO: handle file size larger than uint32_t under 32bit process
-int fsize(FILE *fp, size_t *out)
+#ifdef O_OS_EXT
+
+uint32_t _o4a_native_mem_prot_conv(uint32_t prot)
 {
-	off_t curr = ftello(fp);
-	if(fseeko(fp, 0, SEEK_END) != 0) return O_FAILED;
-	*out = ftello(fp);
-	// it will be a fatal error if we can't restore file pointer
-	assert(fseeko(fp, curr, SEEK_SET) == 0);
-	return O_SUCCESS;
+#ifdef WIN32
+	switch(prot) {
+		case O_MEM_N: return PAGE_NOACCESS;
+		case O_MEM_RO: return PAGE_READONLY;
+		case O_MEM_RE: return PAGE_EXECUTE_READ;
+		case O_MEM_RW: return PAGE_READWRITE;
+		case O_MEM_RWE: return PAGE_EXECUTE_READWRITE;
+		default: return O_INVALID;
+	}
+#endif
+#ifdef LINUX
+	switch(prot) {
+		case O_MEM_N: return PROT_NONE;
+		case O_MEM_RO: return PROT_READ;
+		case O_MEM_RE: return PROT_READ | PROT_EXEC;
+		case O_MEM_RW: return PROT_READ | PROT_WRITE;
+		case O_MEM_RWE: return PROT_READ | PROT_WRITE | PROT_EXEC;
+		default: return O_INVALID;
+	}
+#endif
+	return O_INVALID;
 }
 
-int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size)
+int memprotect(void *mem, size_t size, uint32_t prot)
 {
-	FILE *fp = fopen(filename, "rb");
-	if(fp == NULL) {
-		return O_FAILED;
-	}
+#ifdef WIN32
+	DWORD old_prot;
+	return O_STATUS(VirtualProtect(mem, size, _o4a_native_mem_prot_conv(prot), &old_prot) != 0);
+#endif
+#ifdef LINUX
+	return O_STATUS(mprotect(mem, size, _o4a_native_mem_prot_conv(prot)) == 0);
+#endif
 
-	if(fsize(fp, out_size) != O_SUCCESS) {
-		goto failed;
-	}
-
-	*out_buffer = (uint8_t*)malloc(*out_size);
-	if(*out_buffer == NULL) {
-		goto failed;
-	}
-
-	if(fread(*out_buffer, *out_size, 1, fp) != 1) {
-		goto failed;
-	}
-
-	fclose(fp);
-	return O_SUCCESS;
-
-failed:
-	free(*out_buffer);
-	*out_size = 0;
-	*out_buffer = NULL;
-	fclose(fp);
 	return O_FAILED;
 }
 
-int writefile(const char *filename, void *buffer, size_t size)
+void* memmap(void *addr, size_t size, uint32_t prot)
 {
-	FILE *fp = fopen(filename, "wb");
-	if(fp == NULL) {
-		return O_FAILED;
-	}
+#ifdef WIN32
+	return VirtualAlloc(addr, size, MEM_RESERVE | MEM_COMMIT, _o4a_native_mem_prot_conv(prot));
+#endif
+#ifdef LINUX
+	return mmap(addr, size, _o4a_native_mem_prot_conv(prot), /*flags*/ MAP_PRIVATE | MAP_ANONYMOUS, /*fd*/ 0, /*offset*/ 0);
+#endif
 
-	if(fwrite(buffer, size, 1, fp) != 1) {
-		goto failed;
-	}
+	return NULL;
+}
 
-	fclose(fp);
-	return O_SUCCESS;
-failed:
-	fclose(fp);
+int memunmap(void *addr, size_t size)
+{
+#ifdef WIN32
+	return O_STATUS(VirtualFree(addr, 0 /* must be 0 if MEM_RELEASE */, MEM_RELEASE) != 0);
+#endif
+#ifdef LINUX
+	return O_STATUS(munmap(addr, size) == 0);
+#endif
+
 	return O_FAILED;
 }
 
-#ifdef ONE4ALL_TEST
+#endif
+/* filename: src/test.c */
+
 int main()
 {
 	void* data = memmap(NULL, 0x1000, O_MEM_RWE);
@@ -498,6 +483,7 @@ int main()
 	char *p = hexdump_string(data, 16, buff, sizeof buff);
 	strcat(p, "NotBad\n");
 	puts(buff);
+	puts("hexdmup_file:");
 	hexdump_file(buff, 128, stdout);
 
 	assert(writefile("test.tmp", buff, 64) == O_SUCCESS);
@@ -505,9 +491,32 @@ int main()
 	size_t sz;
 	assert(readfile("test.tmp", &ptr, &sz) == O_SUCCESS);
 
+	puts("hexdmup:");
 	hexdump(ptr, sz);
+	free(ptr);
 
 	assert(memunmap(data, 0x1000) == O_SUCCESS);
+
+	memset(buff, 0xcc, sizeof(buff));
+	size_t n = hexdecode("11 22 33 44 55 66 77 8899aa bb\ncc\tdd\reeff", (void*)&buff);
+	hexdump(buff, (n | 0xf) + 1);
+
+	PHTBL t = htbl_create(16, sizeof(int));
+
+	for(int i = 0; i < 16; i++) {
+		htbl_insert(t, &i, (void*)(uintptr_t)i);
+	}
+
+	for(int i = 0; i < t->count; i++) {
+		int c = 0;
+		PHTBL_ENTRY node = t->table[i];
+		while(node) {
+			// printf(" - %d\n", (int)node->data);
+			c++;
+			node = node->next;
+		}
+		printf("table[%d] -> %d\n", i, c);
+	}
 }
-#endif
+
 #endif
