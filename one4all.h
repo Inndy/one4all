@@ -3,6 +3,8 @@
 #define ONE4ALL 1
 
 #include <assert.h>
+#include <ctype.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,6 +136,32 @@ typedef void* (*shellcode_t)();
 
 ///////////////////////////
 //                       //
+// Function Definiations //
+//                       //
+///////////////////////////
+
+int memprotect(void *mem, size_t size, uint32_t prot);
+void* memmap(void *addr, size_t size, uint32_t prot);
+int memunmap(void *addr, size_t size);
+
+#define xxd(X) puts(#X); hexdump(X, sizeof(X))
+#define zfill(X) memset(X, 0, sizeof(X))
+
+void hexdump_ex(const void *ptr, size_t size, intptr_t addr, void (*cb)(void *, const char *), void *ctx);
+void hexdump_file(const void *data, size_t size, FILE *target);
+void hexdump(const void *data, size_t size);
+char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size);
+size_t hexdecode(const char *encoded, void *buffer);
+int fsize(FILE *fp, size_t *out);
+int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size);
+int writefile(const char *filename, void *buffer, size_t size);
+
+
+/*** SPLITTER FOR DEFINIATION AND IMPLEMENTATION ****/
+
+
+///////////////////////////
+//                       //
 // OS specific functions //
 //                       //
 ///////////////////////////
@@ -200,38 +228,47 @@ int memunmap(void *addr, size_t size)
 	return O_FAILED;
 }
 
-#define xxd(X) puts(#X); hexdump(X, sizeof(X));
-#define zfill(X) memset(X, 0, sizeof(X));
+void hexdump_ex(const void *ptr, size_t size, intptr_t addr, void (*cb)(void *, const char *), void *ctx)
+{
+    const uint8_t *buffer = (const uint8_t *)ptr;
 
-void hexdump_file(const void *data, size_t size, FILE *target) {
-	char ascii[17];
-	size_t i, j;
-	ascii[16] = '\0';
-	for (i = 0; i < size; ++i) {
-		if(i % 16 == 0) {
-			fprintf(target, "%.8llx: ", (unsigned long long)i);
+	while(size > 0) {
+        uint32_t written;
+        char line[128];
+		written = snprintf(line, sizeof(line), "%.8" PRIx64 ": ", (uint64_t)addr);
+
+		uint32_t bound = (size >= 16) ? 16 : size;
+		int i;
+		for(i = 0; i < bound; i++) {
+			written += snprintf(line + written, sizeof(line) - written, "%.2x ", buffer[i]);
 		}
-		fprintf(target, "%02X ", ((unsigned char*)data)[i]);
-		if (((unsigned char*)data)[i] >= ' ' && ((unsigned char*)data)[i] <= '~') {
-			ascii[i % 16] = ((unsigned char*)data)[i];
-		} else {
-			ascii[i % 16] = '.';
+		for(; i < 16; i++) {
+			written += snprintf(line + written, sizeof(line) - written, "   ");
 		}
-		if ((i+1) % 8 == 0 || i+1 == size) {
-			if ((i+1) % 16 == 0) {
-				fprintf(target, " %s\n", ascii);
-			} else if (i+1 == size) {
-				ascii[(i+1) % 16] = '\0';
-				if ((i+1) % 16 <= 8) {
-					fprintf(target, " ");
-				}
-				for (j = (i+1) % 16; j < 16; ++j) {
-					fprintf(target, "   ");
-				}
-				fprintf(target, " %s\n", ascii);
-			}
+		for(i = 0; i < bound; i++) {
+			written += snprintf(line + written, sizeof(line) - written, "%c", (0x20 <= buffer[i] && buffer[i] <= 0x7e) ? buffer[i] : '.');
 		}
+
+        cb(ctx, line);
+
+		if(size <= 16) {
+			return;
+		}
+
+		buffer += 16;
+		size -= 16;
+		addr += 16;
 	}
+}
+
+void hexdump_cb_file(void *ctx, const char *data)
+{
+	fprintf(ctx, "%s\n", data);
+}
+
+void hexdump_file(const void *data, size_t size, FILE *target)
+{
+	hexdump_ex(data, size, (intptr_t)data, hexdump_cb_file, target);
 }
 
 void hexdump(const void *data, size_t size)
@@ -239,39 +276,17 @@ void hexdump(const void *data, size_t size)
 	hexdump_file(data, size, stdout);
 }
 
+void hexdump_cb_string(void *ctx, const char *data)
+{
+	uintptr_t *x = ctx;
+	x[1] += snprintf((char*)x[0] + x[1], x[2] - x[1], "%s\n", data);
+}
+
 char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size)
 {
-	size_t written = 0;
-	char ascii[17];
-	size_t i, j;
-	ascii[16] = '\0';
-	for (i = 0; i < size && written < buff_size; ++i) {
-		if(i % 16 == 0) {
-			written += snprintf(buff + written, buff_size - written, "%.8llx: ", (unsigned long long)i);
-		}
-		written += snprintf(buff + written, buff_size - written, "%02X ", ((unsigned char*)data)[i]);
-		if (((unsigned char*)data)[i] >= ' ' && ((unsigned char*)data)[i] <= '~') {
-			ascii[i % 16] = ((unsigned char*)data)[i];
-		} else {
-			ascii[i % 16] = '.';
-		}
-		if ((i+1) % 8 == 0 || i+1 == size) {
-			if ((i+1) % 16 == 0) {
-				written += snprintf(buff + written, buff_size - written, " %s\n", ascii);
-			} else if (i+1 == size) {
-				ascii[(i+1) % 16] = '\0';
-				if ((i+1) % 16 <= 8) {
-					written += snprintf(buff + written, buff_size - written, " ");
-				}
-				for (j = (i+1) % 16; j < 16; ++j) {
-					written += snprintf(buff + written, buff_size - written, "   ");
-				}
-				written += snprintf(buff + written, buff_size - written, " %s\n", ascii);
-			}
-		}
-	}
-
-	return buff + written;
+	uintptr_t ctx[] = { (uintptr_t)buff, 0, buff_size };
+	hexdump_ex(data, size, (uintptr_t)data, hexdump_cb_string, &ctx);
+	return buff;
 }
 
 size_t hexdecode(const char *encoded, uint8_t *buffer)
