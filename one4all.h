@@ -289,15 +289,22 @@ char *hexdump_string(const void *data, size_t size, char *buff, size_t buff_size
 	return buff;
 }
 
-size_t hexdecode(const char *encoded, uint8_t *buffer)
+#define HEX_DIGIT_DECODE(H) (('0' <= (H) && (H) <= '9') ? (H) - '0' : (((H) | ' ') - 'a' + 0xa))
+
+size_t hexdecode(const char *encoded, void *buffer)
 {
 	size_t i = 0;
-	while(encoded[0] && encoded[1]) {
-		char tmp[4] = {0, 0, 0, 0};
-		memcpy(tmp, encoded, 2);
-		buffer[i++] = strtol(tmp, NULL, 16);
+
+	goto skip_space;
+	while(isxdigit(encoded[0]) && isxdigit(encoded[1])) {
+		((uint8_t*)buffer)[i++] = HEX_DIGIT_DECODE(encoded[0]) << 4 | HEX_DIGIT_DECODE(encoded[1]);
 		encoded += 2;
+
+skip_space:
+		while(*encoded && isspace(*encoded)) encoded++;
 	}
+
+	return i;
 }
 
 // TODO: handle file size larger than uint32_t under 32bit process
