@@ -1,5 +1,5 @@
 // one4all.h by Inndy Lin <inndy.tw@gmail.com>
-// compiled at 2020-02-21 16:39:30 +0800
+// compiled at 2020-02-21 16:59:00 +0800
 #ifndef _ONE4ALL_H_
 #define _ONE4ALL_H_
 
@@ -470,6 +470,7 @@ int memunmap(void *addr, size_t size)
 #endif
 /* filename: src/test.c */
 
+#ifdef ONE4ALL_TEST
 int main()
 {
 	void* data = memmap(NULL, 0x1000, O_MEM_RWE);
@@ -486,10 +487,10 @@ int main()
 	puts("hexdmup_file:");
 	hexdump_file(buff, 128, stdout);
 
-	assert(writefile("test.tmp", buff, 64) == O_SUCCESS);
+	assert(writefile("test-file.tmp", buff, 64) == O_SUCCESS);
 	BYTE *ptr;
 	size_t sz;
-	assert(readfile("test.tmp", &ptr, &sz) == O_SUCCESS);
+	assert(readfile("test-file.tmp", &ptr, &sz) == O_SUCCESS);
 
 	puts("hexdmup:");
 	hexdump(ptr, sz);
@@ -518,5 +519,6 @@ int main()
 		printf("table[%d] -> %d\n", i, c);
 	}
 }
+#endif
 
 #endif
