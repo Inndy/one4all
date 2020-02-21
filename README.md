@@ -8,7 +8,11 @@
 
 ## Docs
 
-No docs available right now. Read the [code](one4all.h) and [examples](samples) instead.
+No docs available right now. Read the code in `src/` and [examples](samples) instead.
+
+## Compile
+
+Run `./compile.py` and you are ready to go!
 
 ## License
 
