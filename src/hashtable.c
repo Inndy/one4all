@@ -54,7 +54,7 @@ int htbl_remove(PHTBL t, void *key)
          node != NULL;
          node = node->next)
     {
-        if (memcmp(node->data, key, t->key_size) == 0) {
+        if (memcmp(node->key, key, t->key_size) == 0) {
             if(prev == NULL) {
                 t->table[index] = node->next;
             } else {

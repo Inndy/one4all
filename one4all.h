@@ -1,5 +1,5 @@
 // one4all.h by Inndy Lin <inndy.tw@gmail.com>
-// compiled at 2020-02-21 16:59:00 +0800
+// compiled at 2020-02-27 17:13:23 +0800
 #ifndef _ONE4ALL_H_
 #define _ONE4ALL_H_
 
@@ -291,7 +291,7 @@ int htbl_remove(PHTBL t, void *key)
          node != NULL;
          node = node->next)
     {
-        if (memcmp(node->data, key, t->key_size) == 0) {
+        if (memcmp(node->key, key, t->key_size) == 0) {
             if(prev == NULL) {
                 t->table[index] = node->next;
             } else {
