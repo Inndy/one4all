@@ -1,5 +1,5 @@
 // one4all.h by Inndy Lin <inndy.tw@gmail.com>
-// compiled at 2020-02-27 17:13:23 +0800
+// compiled at 2020-03-06 11:58:55 +0800
 #ifndef _ONE4ALL_H_
 #define _ONE4ALL_H_
 
@@ -120,6 +120,8 @@ typedef void* (*shellcode_t)();
 int fsize(FILE *fp, size_t *out);
 int readfile(const char *filename, uint8_t **out_buffer, size_t *out_size);
 int writefile(const char *filename, void *buffer, size_t size);
+
+#define READFILE(FN, BUF, SZ) uint8_t *BUF; size_t SZ; MUST(readfile(FN, &BUF, &SZ));
 /* filename: src/hashtable.h */
 
 typedef struct _HTBL_ENTRY {
